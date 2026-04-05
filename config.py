@@ -1,10 +1,10 @@
-# Твой токен от BotFather (вставь его между кавычек)
-TOKEN = '8798181753:AAGmQgx-LE9IvZShrdee5XzJMSr3XKHNBQM'
+import os
 
-# Твой ключ от GROQ (вставь его между кавычек)
-EnglishRS = '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'
+# Берем токен из переменных окружения Railway
+TOKEN = os.getenv('TOKEN')
 
-# Настройка базы данных (оставляем как есть для SQLite)
-DB_URL = 'sqlite+aiosqlite:///db.sqlite3'
+# Берем ключ Groq из переменных окружения Railway
+GROQ_KEY = os.getenv('GROQ_KEY')
 
-# Внимание! Добавьте config.py в файл .gitignore, чтобы не засветить ключи на GitHub!
+# Настройка базы данных
+DB_URL = os.getenv('DB_URL', 'sqlite+aiosqlite:///db.sqlite3')
