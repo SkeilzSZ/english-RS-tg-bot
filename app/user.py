@@ -1,11 +1,19 @@
 from aiogram.filters import CommandStart
 from aiogram import F, types, Router, Bot
 import os
-import config
+
+try:
+    import config
+    CONFIG_KEY = getattr(config, 'EnglishRS', None)
+except ImportError:
+    CONFIG_KEY = None
 
 from app.services.ai_logic import analyze_voice_message, analyze_text_message
 
 user = Router()
+
+# Берем ключ из системы или из конфига
+AI_KEY = os.getenv('EnglishRS') or CONFIG_KEY
 
 @user.message(CommandStart())
 async def cmd_start(message: types.Message):
@@ -19,33 +27,29 @@ async def cmd_start(message: types.Message):
 @user.message(F.voice)
 async def handle_voice(message: types.Message, bot: Bot):
     status = await message.answer("👂 Слушаю и думаю...")
-
     file_id = message.voice.file_id
     file = await bot.get_file(file_id)
     file_on_disk = f"{file_id}.ogg"
-    await bot.download_file(file.file_path, file_on_disk)
+    await bot.download_file(file.path, file_on_disk)
 
     try:
-        # Передаем ID пользователя, чтобы бот вспомнил историю
-        recognized_text, bot_reply = await analyze_voice_message(file_on_disk, config.EnglishRS, message.from_user.id)
+        # Используем наш AI_KEY
+        recognized_text, bot_reply = await analyze_voice_message(file_on_disk, AI_KEY, message.from_user.id)
         ai_response = f"✅ Я услышал:\n{recognized_text}\n\n👩‍🏫 Ответ:\n{bot_reply}"
         await status.edit_text(ai_response)
     except Exception as e:
-        await status.edit_text("Ой, не смог расшифровать звук или связаться с ИИ.")
+        await status.edit_text("Ой, не смог расшифровать звук. Проверь настройки API ключа.")
         print(f"Voice Error: {e}")
         
     if os.path.exists(file_on_disk):
         os.remove(file_on_disk)
 
-
 @user.message(F.text)
 async def handle_text(message: types.Message):
     status = await message.answer("👩‍🏫 Читаю и думаю...")
-    
     try:
-        # Передаем ID пользователя
-        ai_response = await analyze_text_message(message.text, config.EnglishRS, message.from_user.id)
+        ai_response = await analyze_text_message(message.text, AI_KEY, message.from_user.id)
         await status.edit_text(ai_response)
     except Exception as e:
-        await status.edit_text("Ой, я немного задумался... Попробуй написать еще раз!")
+        await status.edit_text("Ой, я немного задумался... Попробуй еще раз!")
         print(f"Text Error: {e}")
