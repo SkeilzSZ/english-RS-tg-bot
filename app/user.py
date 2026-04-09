@@ -27,7 +27,7 @@ async def handle_voice(message: types.Message, bot: Bot):
 
     try:
         # Передаем ID пользователя, чтобы бот вспомнил историю
-        recognized_text, bot_reply = await analyze_voice_message(file_on_disk, config.GROQ_KEY, message.from_user.id)
+        recognized_text, bot_reply = await analyze_voice_message(file_on_disk, config.EnglishRS, message.from_user.id)
         ai_response = f"✅ Я услышал:\n{recognized_text}\n\n👩‍🏫 Ответ:\n{bot_reply}"
         await status.edit_text(ai_response)
     except Exception as e:
@@ -44,7 +44,7 @@ async def handle_text(message: types.Message):
     
     try:
         # Передаем ID пользователя
-        ai_response = await analyze_text_message(message.text, config.GROQ_KEY, message.from_user.id)
+        ai_response = await analyze_text_message(message.text, config.EnglishRS, message.from_user.id)
         await status.edit_text(ai_response)
     except Exception as e:
         await status.edit_text("Ой, я немного задумался... Попробуй написать еще раз!")
